@@ -1,6 +1,6 @@
 describe('On initial page load', function () {
   before(() => {
-    cy.visit('/');
+    cy.visit('http://localhost:3000/');
   });
 
   ['#map', 'nav',
@@ -20,7 +20,7 @@ describe('On initial page load', function () {
 
 describe('the Geovermonter app', () => {
   beforeEach(() => {
-    cy.visit('/');
+    cy.visit('http://localhost:3000/');
   });
 
 
