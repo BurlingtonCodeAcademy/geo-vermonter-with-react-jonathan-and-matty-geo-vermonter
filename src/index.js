@@ -8,22 +8,102 @@ class Livemap extends React.Component {
     super(props)
     this.mapRef = React.createRef();
     this.map = null;
+    let map = this.map;
   }
   componentDidMount() {
     this.map = Leaflet.map(this.mapRef.current, { zoomControl: false }).setView([44.4759, -73.2121], 8);
     Leaflet.tileLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
       attribution: '&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        maxZoom: 18,
+      maxZoom: 18,
       minZoom: 1,
-  }).addTo(this.map);
+    }).addTo(this.map);
     Leaflet.geoJSON(countyBorders, { color: 'rgb(255, 255, 255, 0.5)', fillOpacity: '.175', weight: 2 }).addTo(this.map);
-  this.map.doubleClickZoom.disable();
-  this.map.scrollWheelZoom.disable();
-  this.map.boxZoom.disable();
-  this.map.keyboard.disable();
-  this.map.dragging.disable();
-  this.map.touchZoom.disable();
-  this.map.on('click', this.onMapClick);
+    this.map.doubleClickZoom.disable();
+    this.map.scrollWheelZoom.disable();
+    this.map.boxZoom.disable();
+    this.map.keyboard.disable();
+    this.map.dragging.disable();
+    this.map.touchZoom.disable();
+
+    Leaflet.Control.zoomHome = Leaflet.Control.extend({
+      options: {
+        position: 'topright',
+        zoomInText: '+',
+        zoomInTitle: 'Zoom in',
+        zoomOutText: '-',
+        zoomOutTitle: 'Zoom out',
+        zoomHomeText: '<i class="fa fa-home" style="line-height:1.65;"></i>',
+        zoomHomeTitle: 'Zoom home'
+      },
+
+      onAdd: function (map) {
+        var controlName = 'gin-control-zoom',
+          container = Leaflet.DomUtil.create('div', controlName + ' leaflet-bar'),
+          options = this.options;
+
+        this._zoomInButton = this._createButton(options.zoomInText, options.zoomInTitle,
+          controlName + '-in', container, this._zoomIn);
+        this._zoomHomeButton = this._createButton(options.zoomHomeText, options.zoomHomeTitle,
+          controlName + '-home', container, this._zoomHome);
+        this._zoomOutButton = this._createButton(options.zoomOutText, options.zoomOutTitle,
+          controlName + '-out', container, this._zoomOut);
+
+        this._updateDisabled();
+        map.on('zoomend zoomlevelschange', this._updateDisabled, this);
+
+        return container;
+      },
+
+      onRemove: function (map) {
+        map.off('zoomend zoomlevelschange', this._updateDisabled, this);
+      },
+
+      _zoomIn: function (e) {
+        this._map.zoomIn(e.shiftKey ? 3 : 1);
+      },
+
+      _zoomOut: function (e) {
+        this._map.zoomOut(e.shiftKey ? 3 : 1);
+      },
+
+      _zoomHome: function (e) {
+        this._map.flyTo([44.4759, -73.2121], 8);
+      },
+
+      _createButton: function (html, title, className, container, fn) {
+        var link = Leaflet.DomUtil.create('a', className, container);
+        link.innerHTML = html;
+        link.href = '#';
+        link.title = title;
+
+        Leaflet.DomEvent.on(link, 'mousedown dblclick', Leaflet.DomEvent.stopPropagation)
+          .on(link, 'click', Leaflet.DomEvent.stop)
+          .on(link, 'click', fn, this)
+          .on(link, 'click', this._refocusOnMap, this);
+
+        return link;
+      },
+
+      _updateDisabled: function () {
+        var map = this._map,
+          className = 'leaflet-disabled';
+
+        Leaflet.DomUtil.removeClass(this._zoomInButton, className);
+        Leaflet.DomUtil.removeClass(this._zoomOutButton, className);
+
+        if (map._zoom === map.getMinZoom()) {
+          Leaflet.DomUtil.addClass(this._zoomOutButton, className);
+        }
+        if (map._zoom === map.getMaxZoom()) {
+          Leaflet.DomUtil.addClass(this._zoomInButton, className);
+        }
+      }
+    });
+    // add the new control to the map
+    var zoomHome = new Leaflet.Control.zoomHome();
+    zoomHome.addTo(this.map);
+
+    this.map.on('click', this.onMapClick);
   }
 
   componentWillUnmount() {
@@ -32,8 +112,8 @@ class Livemap extends React.Component {
   }
 
   onMapClick = (e) => {
-    const {lat, lng} = e.latlng;
-    Leaflet.marker([lat, lng]).addTo(this.map)
+    const { lat, lng } = e.latlng;
+  //  Leaflet.marker([lat, lng]).addTo(this.map)
   };
 
   render() {
@@ -44,52 +124,66 @@ const rootElement = document.getElementById("root");
 ReactDOM.render(<Livemap />, rootElement);
 
 
-const counties = 
-[
-  {name: "Addison County", 
-center: [44.001944, -73.145556],
-town: "Middlebury"
-}, {name: "Bennington County",
-center: [43.1410, -73.0810],
-town: "Manchester Center"
-}, {name: "Caledonia County",
-center: [44.46, -72.1159899],
-town: "Danville"
-}, {name: "Chittenden County",
-center: [44.501944, -73.093889],
-town: "Essex Junction"
-}, {name: "Essex County",
-center: [44.73, -71.7801148],
-town: "Ferdinand"
-}, {name: "Franklin County",
-center: [44.809722, -73.087222],
-town: "St. Albans City"
-}, {name: "Grand Isle County",
-center: [44.7882463, -73.2909557],
-town: "North Hero"
-}, {name: "Lamoille County",
-center: [44.599563, -72.6278814],
-town: "Hyde Park"
-}, {name: "Orange County",
-center: [43.9956247, -72.3912821],
-town: "Chelsea"
-}, {name: "Orleans County",
-center: [44.83, -72.25],
-town: "Irasburg"
-}, {name: "Rutland County",
-center: [43.606944, -72.974722],
-town: "Rutland"
-}, {name: "Washington County",
-center: [44.262222, -72.580833],
-town: "Montpelier"
-}, {name: "Windham County",
-center: [42.984806, -72.656049],
-town: "Newfane"
-}, {name: "Windsor County",
-center: [43.484167, -72.385556],
-town: "Windsor"
-}
-];
+const counties =
+  [
+    {
+      name: "Addison County",
+      center: [44.001944, -73.145556],
+      town: "Middlebury"
+    }, {
+      name: "Bennington County",
+      center: [43.1410, -73.0810],
+      town: "Manchester Center"
+    }, {
+      name: "Caledonia County",
+      center: [44.46, -72.1159899],
+      town: "Danville"
+    }, {
+      name: "Chittenden County",
+      center: [44.501944, -73.093889],
+      town: "Essex Junction"
+    }, {
+      name: "Essex County",
+      center: [44.73, -71.7801148],
+      town: "Ferdinand"
+    }, {
+      name: "Franklin County",
+      center: [44.809722, -73.087222],
+      town: "St. Albans City"
+    }, {
+      name: "Grand Isle County",
+      center: [44.7882463, -73.2909557],
+      town: "North Hero"
+    }, {
+      name: "Lamoille County",
+      center: [44.599563, -72.6278814],
+      town: "Hyde Park"
+    }, {
+      name: "Orange County",
+      center: [43.9956247, -72.3912821],
+      town: "Chelsea"
+    }, {
+      name: "Orleans County",
+      center: [44.83, -72.25],
+      town: "Irasburg"
+    }, {
+      name: "Rutland County",
+      center: [43.606944, -72.974722],
+      town: "Rutland"
+    }, {
+      name: "Washington County",
+      center: [44.262222, -72.580833],
+      town: "Montpelier"
+    }, {
+      name: "Windham County",
+      center: [42.984806, -72.656049],
+      town: "Newfane"
+    }, {
+      name: "Windsor County",
+      center: [43.484167, -72.385556],
+      town: "Windsor"
+    }
+  ];
 
 const countyBorders =
 {

@@ -90,7 +90,7 @@ function quit(winner) {
     document.getElementById('county').innerHTML = myCounty;
     document.getElementById('town').innerHTML = myTown;
     myMap.flyTo([43.8, -72.6], 8);
-    myMarker = L.marker([lat, long]).addTo(myMap);
+    myMarker = Leaflet.marker([lat, long]).addTo(myMap);
     lat = 0;
     long = 0;
     viewLat = 0;
@@ -130,14 +130,14 @@ function didIWin(guess) {
 }
 
 function drawMap(lat, long, myZoom) {
-  myMap = L.map('map-wrapper', { zoomControl: false }).setView([lat, long], myZoom);
-  L.tileLayer(
+  myMap = Leaflet.map('map-wrapper', { zoomControl: false }).setView([lat, long], myZoom);
+  Leaflet.tileLayer(
     'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       maxZoom: 18,
       minZoom: 1,
     }).addTo(myMap);
-  L.geoJSON(countyBorders, { color: 'rgb(255, 255, 255, 0.5)', fillOpacity: '.175', weight: 2 }).addTo(myMap);
+  Leaflet.geoJSON(countyBorders, { color: 'rgb(255, 255, 255, 0.5)', fillOpacity: '.175', weight: 2 }).addTo(myMap);
   myMap.doubleClickZoom.disable();
   myMap.scrollWheelZoom.disable();
   myMap.boxZoom.disable();
@@ -152,20 +152,20 @@ function updateScore() {
 }
 
 function moveAndDrawLine(latPlus, longPlus) {
-  let pointA = new L.LatLng(viewLat, viewLong);
+  let pointA = new Leaflet.LatLng(viewLat, viewLong);
   viewLat = (+viewLat + latPlus);
   viewLong = (+viewLong + longPlus);
-  let pointB = new L.LatLng(viewLat, viewLong);
+  let pointB = new Leaflet.LatLng(viewLat, viewLong);
   let pointList = [pointA, pointB];
 
-  let myPolyline = new L.polyline(pointList, {
+  let myPolyline = new Leaflet.polyline(pointList, {
     color: 'yellow',
     weight: 4,
     opacity: 0.7,
     smoothFactor: 1
   });
   myPolyline.addTo(myMap);
-  myMap.panTo(new L.LatLng(viewLat, viewLong));
+  myMap.panTo(new Leaflet.LatLng(viewLat, viewLong));
   updateScore();
   toggleButtons(['return']);
 }
@@ -173,7 +173,7 @@ function moveAndDrawLine(latPlus, longPlus) {
 function goReturn() {
   viewLat = lat;
   viewLong = long;
-  myMap.flyTo(new L.LatLng(lat, long));
+  myMap.flyTo(new Leaflet.LatLng(lat, long));
   disableButtons(['return']);
 }
 
