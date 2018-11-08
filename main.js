@@ -1,47 +1,191 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import Leaflet from "leaflet";
-import "./styles.css";
+let lat = 0;
+let long = 0;
+let viewLat = 0;
+let viewLong = 0;
+let score = 0;
+let gameCount = 0;
+let highScore = 0;
+let highScorer;
+let myCounty;
+let myTown;
+let countyIndex;
+let myMap;
+let myMarker;
+let titleHTML;
 
-class Livemap extends React.Component {
-  constructor(props) {
-    super(props)
-    this.mapRef = React.createRef();
-    this.map = null;
-  }
-  componentDidMount() {
-    this.map = Leaflet.map(this.mapRef.current, { zoomControl: false }).setView([44.4759, -73.2121], 8);
-    Leaflet.tileLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-      attribution: '&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        maxZoom: 18,
-      minZoom: 1,
-  }).addTo(this.map);
-    Leaflet.geoJSON(countyBorders, { color: 'rgb(255, 255, 255, 0.5)', fillOpacity: '.175', weight: 2 }).addTo(this.map);
-  this.map.doubleClickZoom.disable();
-  this.map.scrollWheelZoom.disable();
-  this.map.boxZoom.disable();
-  this.map.keyboard.disable();
-  this.map.dragging.disable();
-  this.map.touchZoom.disable();
-  this.map.on('click', this.onMapClick);
-  }
+function pickACountyAndTown() {
+  let county = (Math.floor(Math.random() * counties.length));
+  countyIndex = county;
+  myCounty = counties[county].name;
+  myTown = counties[county].town;
+}
 
-  componentWillUnmount() {
-    this.map.off("click", this.onMapClick);
-    this.map = null;
-  }
+function titleUpdate(text) {
+  document.getElementById('winners-circle').innerHTML = text;
+}
 
-  onMapClick = (e) => {
-    const {lat, lng} = e.latlng;
-    Leaflet.marker([lat, lng]).addTo(this.map)
-  };
-
-  render() {
-    return <div ref={this.mapRef} id="mapid" className="map" />;
+function toggleButtons(array, bool) {
+  for (button of array) {
+    document.getElementById(button).disabled = bool;
   }
 }
-const rootElement = document.getElementById("root");
-ReactDOM.render(<Livemap />, rootElement);
+
+
+function highScoreList() {
+  titleHTML = (document.getElementById('winners-circle').innerHTML);
+  console.log(titleHTML);
+  titleUpdate(`The High Score is: <font color="red">${highScore}</font><br><br>`);
+  setTimeout('titleUpdate(titleHTML)', 5000);
+}
+
+function start() {
+  document.getElementById('longitude').innerHTML = `<span style="font-family: 'Permanent Marker'; font-size: 17px; font-weight: 100;">?</span>`;
+  document.getElementById('latitude').innerHTML = `<span style="font-family: 'Permanent Marker'; font-size: 17px; font-weight: 100;">?</span>`;
+  document.getElementById('county').innerHTML = '?';
+  document.getElementById('town').innerHTML = '?';
+  toggleButtons(['start', 'return'], true);
+  toggleButtons(['north', 'west', 'east', 'south', 'guess', 'quit', 'countiesButton'], false);
+  pickACountyAndTown();
+  document.getElementById('cheat-sheet').innerHTML = '';
+  document.getElementById('cheat-sheet').innerHTML = `${myCounty.split(' ').join('-')}`;
+  console.log(document.getElementById('cheat-sheet').innerHTML);
+  lat = counties[countyIndex].center[0];
+  long = counties[countyIndex].center[1];
+  viewLat = lat;
+  viewLong = long;
+  myMap.setView(counties[countyIndex].center, 13);
+  myMap.flyTo(counties[countyIndex].center, 18);
+  score = +score + 150;
+  titleUpdate(`Round ${gameCount + 1} of <span id="gv-green">GeoVermonter</span><br>Your Score is: <span class="blink-me">${score}</span>`);
+  if (myMarker) {
+    myMarker.remove();
+  }
+}
+
+function cancel() {
+  toggleButtons(['guess'], false);
+  document.getElementById('guessguess').innerHTML = "";
+  document.getElementById('cancelguess').innerHTML = "";
+  document.getElementById('guesslist').innerHTML = "";
+}
+
+function guess() {
+  toggleButtons(['guess'], true);
+  document.getElementById('guessguess').innerHTML = `<form><button id='guessbutton' type='button' onclick="didIWin(document.querySelector('input[name=radio]:checked').id.split('-').join(' '))">Guess</button>`;
+  document.getElementById('cancelguess').innerHTML = "<button id='cancelbutton' onclick='cancel()'>Cancel</button>";
+  document.getElementById('guesslist').innerHTML = "<div id='something'>What county are we in?</div>";
+  for (county of counties) {
+    document.getElementById('guesslist').innerHTML += `<div><input type="radio" name="radio" id="${county.name.split(' ').join('-')}"  class="for-cypress-testing-hi-alex-and-josh-how-are-you"><span>${county.name}</span></input></div>`;
+  }
+  document.getElementById('guesslist').innerHTML += "</form>";
+}
+
+function quit(winner) {
+  cancel();
+  toggleButtons(['start'], false);
+  toggleButtons(['north', 'west', 'east', 'south', 'guess', 'quit', 'return', 'countiesButton'], true);
+  if (lat != 0 && long != 0) {
+    document.getElementById('longitude').innerHTML = long;
+    document.getElementById('latitude').innerHTML = lat;
+    document.getElementById('county').innerHTML = myCounty;
+    document.getElementById('town').innerHTML = myTown;
+    myMap.flyTo([43.8, -72.6], 8);
+    myMarker = L.marker([lat, long]).addTo(myMap);
+    lat = 0;
+    long = 0;
+    viewLat = 0;
+    viewLong = 0;
+    gameCount = gameCount + 1;
+    if (gameCount == 3) {
+      if (score >= highScore) {
+        highScorer = `You have the high score: <span class="blink-me">${score}</span><br><br>`;
+        highScore = score;
+      } else {
+        highScorer = "Try again.";
+      }
+      titleUpdate(`Game Over.  ${highScorer}`)
+      score = 0;
+      gameCount = 0;
+    }
+    if (winner != 'iwon') {
+      titleUpdate(`Too bad!<br>It was ${myCounty}.`);
+      score = 0;
+      gameCount = 0;
+    }
+  }
+}
+
+function didIWin(guess) {
+  if (myCounty == guess) {
+    titleUpdate(`Correct!  You won this round!<br>Your score is: <span class="blink-me">${score}</span>`);
+    cancel();
+    quit('iwon');
+  } else {
+    score = score - 10;
+    if (score <= 0) {
+      score = 1;
+    }
+    titleUpdate(`No, it's not ${guess}.  Try again!<br>Your score is: <span class="blink-me">${score}</span>`);
+  }
+}
+
+function drawMap(lat, long, myZoom) {
+  myMap = L.map('map-wrapper', { zoomControl: false }).setView([lat, long], myZoom);
+  L.tileLayer(
+    'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 18,
+      minZoom: 1,
+    }).addTo(myMap);
+  L.geoJSON(countyBorders, { color: 'rgb(255, 255, 255, 0.5)', fillOpacity: '.175', weight: 2 }).addTo(myMap);
+  myMap.doubleClickZoom.disable();
+  myMap.scrollWheelZoom.disable();
+  myMap.boxZoom.disable();
+  myMap.keyboard.disable();
+  myMap.dragging.disable();
+  myMap.touchZoom.disable();
+}
+
+function updateScore() {
+  score = score - 1;
+  titleUpdate(`Moving the map reduces your score!<br>Your score is: <span class="blink-me">${score}</span>`);
+}
+
+function moveAndDrawLine(latPlus, longPlus) {
+  let pointA = new L.LatLng(viewLat, viewLong);
+  viewLat = (+viewLat + latPlus);
+  viewLong = (+viewLong + longPlus);
+  let pointB = new L.LatLng(viewLat, viewLong);
+  let pointList = [pointA, pointB];
+
+  let myPolyline = new L.polyline(pointList, {
+    color: 'yellow',
+    weight: 4,
+    opacity: 0.7,
+    smoothFactor: 1
+  });
+  myPolyline.addTo(myMap);
+  myMap.panTo(new L.LatLng(viewLat, viewLong));
+  updateScore();
+  toggleButtons(['return']);
+}
+
+function goReturn() {
+  viewLat = lat;
+  viewLong = long;
+  myMap.flyTo(new L.LatLng(lat, long));
+  disableButtons(['return']);
+}
+
+function showCounties() {
+  document.getElementById('map').style.backgroundImage = "url('vermont-county-map.gif')";
+  document.getElementById('county-image').innerHTML = "<button id='countiesButton' onclick='hideCounties()'>Hide Counties</button>";
+}
+
+function hideCounties() {
+  document.getElementById('map').style.backgroundImage = "none";
+  document.getElementById('county-image').innerHTML = "<button id='countiesButton' onclick='showCounties()'>Show Counties</button>";
+}
 
 
 const counties = 
