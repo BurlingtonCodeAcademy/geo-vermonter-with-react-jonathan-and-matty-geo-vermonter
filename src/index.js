@@ -35,6 +35,32 @@ class Livemap extends React.Component {
     this.map = null;
   }
 
+  moveAndDrawLine(latPlus, longPlus) {
+    let pointA = new Leaflet.LatLng(viewLat, viewLong);
+    viewLat = (+viewLat + latPlus);
+    viewLong = (+viewLong + longPlus);
+    let pointB = new Leaflet.LatLng(viewLat, viewLong);
+    let pointList = [pointA, pointB];
+  
+    let myPolyline = new Leaflet.polyline(pointList, {
+      color: 'yellow',
+      weight: 4,
+      opacity: 0.7,
+      smoothFactor: 1
+    });
+    myPolyline.addTo(myMap);
+    myMap.panTo(new Leaflet.LatLng(viewLat, viewLong));
+    updateScore();
+    toggleButtons(['return']);
+  }
+  
+  goReturn() {
+    viewLat = lat;
+    viewLong = long;
+    myMap.flyTo(new Leaflet.LatLng(lat, long));
+    disableButtons(['return']);
+  }
+  
   onMapClick = (e) => {
     const { lat, lng } = e.latlng;
     //  Leaflet.marker([lat, lng]).addTo(this.map)
