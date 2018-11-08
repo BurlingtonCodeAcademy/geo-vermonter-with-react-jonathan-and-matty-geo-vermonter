@@ -4,6 +4,69 @@
 }
 
 #mapid {
-  height: 800px;
-  width: 800px;
+  height: 700px;
+  width: 700px;
+}
+
+.row, #map, #high-score, #map-middle, #northButton, #westButton, #eastButton, #southButton, #returnButton, #county-image, .balancer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 1000;
+  border: 3px solid yellow;
+}
+
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+#returnButton {
+  padding: 0px 0 0 0;
+}
+
+#returnButton button {
+  opacity: 0.67;
+}
+
+#returnButton button:disabled {
+  opacity: 0.25;
+}
+
+#northButton {
+  padding: 30px 0 0 0;
+}
+
+.balancer {
+  flex: 1;
+}
+
+#southButton {
+  flex: 1;
+  padding-bottom: 50px;
+}
+
+#county-image {
+  flex: 1;
+  padding-bottom: 50px;
+}
+
+#map {
+  height: auto;
+  width: auto;
+  min-height: 480px;
+  min-width: 310px;
+  padding: 0;
+  border-radius: 8px;
+  background-position: center;
+  background-position-y: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  flex: 4;
+}
+
+#county-map {
+  height: 450px;
 }

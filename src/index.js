@@ -37,11 +37,41 @@ class Livemap extends React.Component {
 
   onMapClick = (e) => {
     const { lat, lng } = e.latlng;
-  //  Leaflet.marker([lat, lng]).addTo(this.map)
+    //  Leaflet.marker([lat, lng]).addTo(this.map)
   };
 
   render() {
-    return <div ref={this.mapRef} id="mapid" className="map" />;
+    return (
+      <div ref={this.mapRef} id="mapid" className="map">
+        <div id="wrapper">
+          <div id="northButton">
+            <button id='north' onclick="moveAndDrawLine(0.0025, 0)">North</button>
+          </div>
+          <div id="map-middle">
+            <div id="westButton">
+              <button id='west' onclick="moveAndDrawLine(0, -0.0025)">West</button>
+            </div>
+            <div id="map">
+              <div id="returnButton">
+                <button id='return' onclick="goReturn()">Return</button>
+              </div>
+            </div>
+            <div id="eastButton">
+              <button id='east' onclick="moveAndDrawLine(0, 0.0025)">East</button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="balancer"></div>
+            <div id="southButton">
+              <button id='south' onclick="moveAndDrawLine(-0.0025, 0)">South</button>
+            </div>
+            <div id='county-image'>
+              <button id='countiesButton' onclick="showCounties()">Show Counties</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 const rootElement = document.getElementById("root");
