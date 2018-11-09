@@ -5,6 +5,14 @@ import './styles.css';
 import countyBorders from './countyBorders.js';
 import counties from './counties.js';
 
+function WarningBanner(props) {
+	if (!props.warn) {
+		return null;
+	}
+
+	return <div className="warning">Winner!</div>;
+}
+
 class Livemap extends React.Component {
   constructor(props) {
     super(props);
@@ -15,6 +23,8 @@ class Livemap extends React.Component {
     this.viewLat = this.lat;
     this.viewLong = this.long;
     this.showHide = true;
+		this.state = { showWarning: false };
+		this.handleToggleClick = this.handleToggleClick.bind(this);
 
   }
   componentDidMount() {
@@ -50,6 +60,12 @@ class Livemap extends React.Component {
     this.map.off('click', this.onMapClick);
     this.map = null;
   }
+
+  	handleToggleClick() {
+		this.setState(prevState => ({
+			showWarning: !prevState.showWarning
+		}));
+	}
 
   randomCountyIndex() {
     let index = (Math.floor(Math.random() * counties.length));
@@ -160,13 +176,16 @@ class Livemap extends React.Component {
             <div className="bold">
               GeoVermonter
           </div>
-          <div id="giveUp">
+          <div>
+          <WarningBanner warn={this.state.showWarning} />
+        </div>
+      <div id="giveUp">
           <button id="giveUpButton" className="hidden" onClick={() => this.toggleHide()}>
             I Give Up</button>
           </div>
           </div>
 
-          <button id="Addison-County" className="hidden">Addison County</button>
+          <button id="Addison-County" className="hidden" onClick={this.handleToggleClick}>Addison County</button>
           <button id="Bennington-County" className="hidden" onClick="">Bennington County</button>
           <button id="Caledonia-County" className="hidden" onClick="">Caledonia County</button>
           <button id="Chittenden-County" className="hidden" onClick="">Chittenden County</button>
