@@ -106,6 +106,7 @@ button:disabled {
 
 #status {
   display: flex;
+  flex-direction: column;
   flex-grow: 1;
   background-color: white;
   background-image: linear-gradient(rgb(225, 225, 225), white, rgb(225, 225, 225));
