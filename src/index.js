@@ -6,25 +6,27 @@ import countyBorders from './countyBorders.js';
 import counties from './counties.js';
 
 function WarningBanner(props) {
-	if (!props.warn) {
-		return null;
-	}
+  if (!props.warn) {
+    return null;
+  }
 
-	return <div className="warning">Winner!</div>;
+  return <div className="warning">Winner!</div>;
 }
 
 class Livemap extends React.Component {
-	constructor(props) {
-		super(props);
-		this.mapRef = React.createRef();
-		this.map = null;
-		this.lat = 43.7;
-		this.long = -72.6;
-		this.viewLat = this.lat;
-		this.viewLong = this.long;
-		this.state = { showWarning: true };
-		this.handleToggleClick = this.handleToggleClick.bind(this);
-      this.score = 0;
+  constructor(props) {
+    super(props);
+    this.mapRef = React.createRef();
+    this.map = null;
+    this.lat = 43.7;
+    this.long = -72.6;
+    this.viewLat = this.lat;
+    this.viewLong = this.long;
+    this.myCounty = 'Addison County';
+    this.showHide = true;
+    this.state = { showWarning: false };
+    this.toggleWinner = this.toggleWinner.bind(this);
+    this.score = 0;
 	}
 	componentDidMount() {
 		this.map = Leaflet.map(this.mapRef.current, {
@@ -64,11 +66,11 @@ class Livemap extends React.Component {
      document.getElementById("score").innerHTML=this.score;
   }
 
-	handleToggleClick() {
-		this.setState(prevState => ({
-			showWarning: !prevState.showWarning
-		}));
-	}
+  toggleWinner() {
+    this.setState(prevState => ({
+      showWarning: !prevState.showWarning
+    }));
+  }
 
 	randomCountyIndex() {
 		let index = Math.floor(Math.random() * counties.length);
@@ -94,131 +96,133 @@ class Livemap extends React.Component {
 		this.map.panTo(new Leaflet.LatLng(this.viewLat, this.viewLong));
 	}
 
-	goNorth() {
-		this.moveAndDrawLine(0.0025, 0, 'yellow');
-	}
-
-	goWest() {
-		this.moveAndDrawLine(0, -0.0025, 'cyan');
-	}
-
-	goEast() {
-		this.moveAndDrawLine(0, 0.0025, 'orange');
-	}
-
-	goSouth() {
-		this.moveAndDrawLine(-0.0025, 0, 'red');
-	}
-
 	goReturn() {
-		this.moveAndDrawLine.bind(this);
-		this.viewLat = this.lat;
-		this.viewLong = this.long;
-		this.map.flyTo(new Leaflet.LatLng(this.lat, this.long));
-	}
+   this.moveAndDrawLine.bind(this);
+   this.viewLat = this.lat;
+   this.viewLong = this.long;
+   this.map.flyTo(new Leaflet.LatLng(this.lat, this.long));
+ }
 
-	randomCounty() {
-		let countyIndex = this.randomCountyIndex();
-		this.lat = counties[countyIndex].center[0];
-		this.long = counties[countyIndex].center[1];
-		this.goReturn();
-	}
+  randomCounty() {
+    let countyIndex = this.randomCountyIndex();
+    this.lat = counties[countyIndex].center[0];
+    this.long = counties[countyIndex].center[1];
+    this.myCounty = counties[countyIndex].name;
+    console.log(this.myCounty);
+  }
 
-	onMapClick = e => {
-		//const { lat, lng } = e.latlng;
-		//  Leaflet.marker([lat, lng]).addTo(this.map)
-	};
+  toggleHide() {
+    this.showHide = !this.showHide;
+    document.getElementById('start').className = this.showHide ? 'button' : 'hidden';
+    document.getElementById('quit').className = this.showHide ? 'hidden' : 'button';
+    document.getElementById('north').className = this.showHide ? 'hidden' : 'button';
+    document.getElementById('west').className = this.showHide ? 'hidden' : 'button';
+    document.getElementById('east').className = this.showHide ? 'hidden' : 'button';
+    document.getElementById('south').className = this.showHide ? 'hidden' : 'button';
+    document.getElementById('return').className = this.showHide ? 'hidden' : 'button';
+    for (let i = 0; i < 14; i++) {
+      document.getElementById(counties[i].name.split(' ').join('-')).className = this.showHide ? 'hidden' : 'button';
+    }
+  }
 
-	render() {
-		return (
-			<div className="row">
-				<div ref={this.mapRef} id="mapid" className="map">
-					<div id="wrapper">
-						<div id="northButton">
-							<button
-								id="north"
-								onClick={this.goNorth.bind(this)}
-							>
-								North
+  start() {
+    this.randomCounty();
+    this.goReturn();
+    this.toggleHide();
+    this.setState(prevState => ({
+      showWarning: false
+    }));
+  }
+
+  guess(county) {
+    if (county === this.myCounty) {
+      this.toggleWinner();
+      this.toggleHide();
+    }
+  }
+
+  onMapClick = e => {
+    //const { lat, lng } = e.latlng;
+    //  Leaflet.marker([lat, lng]).addTo(this.map)
+  };
+
+  render() {
+    return (
+      <div className="row">
+        <div ref={this.mapRef} id="mapid" className="map">
+          <div id="wrapper">
+            <div id="northButton">
+              <button id="north" className="hidden" onClick={() => this.moveAndDrawLine(0.0025, 0, 'yellow')}>
+                North
+						</button>
+            </div>
+            <div id="map-middle">
+              <div id="westButton">
+                <button id="west" className="hidden" onClick={() => this.moveAndDrawLine(0, -0.0025, 'cyan')}>
+                  West
 							</button>
-						</div>
-						<div id="map-middle">
-							<div id="westButton">
-								<button
-									id="west"
-									onClick={this.goWest.bind(this)}
-								>
-									West
+              </div>
+              <div id="map">
+                <div id="returnButton">
+                  <button id="return" className="hidden" onClick={() => this.goReturn()}>
+                    Return
 								</button>
-							</div>
-							<div id="map">
-								<div id="returnButton">
-									<button
-										id="return"
-										onClick={this.goReturn.bind(this)}
-									>
-										Return
-									</button>
-								</div>
-							</div>
-							<div id="eastButton">
-								<button
-									id="east"
-									onClick={this.goEast.bind(this)}
-								>
-									East
-								</button>
-							</div>
-						</div>
-						<div className="row">
-							<div className="balancer" />
-							<div id="southButton">
-								<button
-									id="south"
-									onClick={this.goSouth.bind(this)}
-								>
-									South
-								</button>
-							</div>
-							<div id="county-image">
-								<button
-									id="countiesButton"
-									onClick={this.randomCounty.bind(this)}
-								>
-									Start
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div className="column">
-					<div id="status">
-						<div className="bold">GeoVermonter</div>
-                  <div>Score is <span id="score"></span></div>
-						<div>o
-							<WarningBanner warn={this.state.showWarning} />
-						</div>
-					</div>
-					<button onClick={this.handleToggleClick}>
-						Addison County
-					</button>
-					<button>Bennington County</button>
-					<button>Caledonia County</button>
-					<button>Chittenden County</button>
-					<button>Essex County</button>
-					<button>Franklin County</button>
-					<button>Grand Isle County</button>
-					<button>Lamoille County</button>
-					<button>Orange County</button>
-					<button>Orleans County</button>
-					<button>Rutland County</button>
-					<button>Washington County</button>
-					<button>Windham County</button>
-					<button>Windsor County</button>
-				</div>
-			</div>
-		);
-	}
+                </div>
+              </div>
+              <div id="eastButton">
+                <button id="east" className="hidden" onClick={() => this.moveAndDrawLine(0, 0.0025, 'orange')}>
+                  East
+							</button>
+              </div>
+            </div>
+            <div className="row">
+              <div className="balancer" />
+              <div id="southButton">
+                <button id="south" className="hidden" onClick={() => this.moveAndDrawLine(-0.0025, 0, 'red')}>
+                  South
+							</button>
+              </div>
+              <div id="startDiv">
+                <button id="start" className="button" onClick={() => this.start()}>
+                  Start
+							</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="column">
+          <div id="status">
+            <div className="bold">
+              GeoVermonter
+          </div>
+          <div>Score is <span id="score">0</span></div>
+            <div>
+              <WarningBanner warn={this.state.showWarning} />
+            </div>
+            <div id="giveUp">
+              <button id="quit" className="hidden" onClick={() => this.toggleHide()}>
+                I Give Up</button>
+            </div>
+          </div>
+
+          <button id="Addison-County" className="hidden" onClick={() => this.guess('Addison County')}>Addison County</button>
+          <button id="Bennington-County" className="hidden" onClick={() => this.guess('Bennington County')}>Bennington County</button>
+          <button id="Caledonia-County" className="hidden" onClick={() => this.guess('Caledonia County')}>Caledonia County</button>
+          <button id="Chittenden-County" className="hidden" onClick={() => this.guess('Chittenden County')}>Chittenden County</button>
+          <button id="Essex-County" className="hidden" onClick={() => this.guess('Essex County')}>Essex County</button>
+          <button id="Franklin-County" className="hidden" onClick={() => this.guess('Franklin County')}>Franklin County</button>
+          <button id="Grand-Isle-County" className="hidden" onClick={() => this.guess('Grand Isle County')}>Grand Isle County</button>
+          <button id="Lamoille-County" className="hidden" onClick={() => this.guess('Lamoille County')}>Lamoille County</button>
+          <button id="Orange-County" className="hidden" onClick={() => this.guess('Orange County')}>Orange County</button>
+          <button id="Orleans-County" className="hidden" onClick={() => this.guess('Orleans County')}>Orleans County</button>
+          <button id="Rutland-County" className="hidden" onClick={() => this.guess('Rutland County')}>Rutland County</button>
+          <button id="Washington-County" className="hidden" onClick={() => this.guess('Washington County')}>Washington County</button>
+          <button id="Windham-County" className="hidden" onClick={() => this.guess('Windham County')}>Windham County</button>
+          <button id="Windsor-County" className="hidden" onClick={() => this.guess('Windsor County')}>Windsor County</button>
+        </div>
+      </div>
+    );
+  }
 }
 const rootElement = document.getElementById('root');
 ReactDOM.render(<Livemap />, rootElement);
