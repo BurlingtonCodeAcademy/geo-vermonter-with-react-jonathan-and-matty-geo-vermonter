@@ -3,26 +3,23 @@ import ReactDOM from 'react-dom';
 import Leaflet from 'leaflet';
 import './styles.css';
 import countyBorders from './countyBorders.js';
+import counties from './counties.js';
 
 class Livemap extends React.Component {
 	constructor(props) {
 		super(props);
 		this.mapRef = React.createRef();
-		this.map = null;
-		//let map = this.map;
-		this.lat = 43.8;
-		//let lat = this.lat;
-		this.long = -72.6;
-		//let long = this.long;
-		this.viewLat = this.lat;
-		//'let viewLat = this.viewLat;
-		this.viewLong = this.long;
-		//let viewLong = this.viewLong;
-	}
+    this.map = null;
+    this.lat = 43.8;
+    this.long = -72.6;
+    this.viewLat = this.lat;
+    this.viewLong = this.long;
+
+}
 	componentDidMount() {
 		this.map = Leaflet.map(this.mapRef.current, {
 			zoomControl: false
-		}).setView([43.8759, -72.2121], 8);
+		}).setView([this.lat, this.long], 15);
 		Leaflet.tileLayer(
 			'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 			{
@@ -30,7 +27,7 @@ class Livemap extends React.Component {
 					'&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
 				maxZoom: 18,
 				minZoom: 1,
-				center: [43.8759, -72.2121]
+				center: [this.lat, this.long]
 			}
 		).addTo(this.map);
 		Leaflet.geoJSON(countyBorders, {
@@ -52,9 +49,13 @@ class Livemap extends React.Component {
 		this.map.off('click', this.onMapClick);
 		this.map = null;
 	}
-
-	moveAndDrawLine(latPlus, longPlus) {
-		console.log('Im here!');
+  
+  randomCountyIndex() {
+    let index = (Math.floor(Math.random() * counties.length));
+    return index;
+  }
+  
+	moveAndDrawLine(latPlus, longPlus, color) {
 		let pointA = new Leaflet.LatLng(this.viewLat, this.viewLong);
 		this.viewLat = +this.viewLat + latPlus;
 		this.viewLong = +this.viewLong + longPlus;
@@ -62,23 +63,46 @@ class Livemap extends React.Component {
 		let pointList = [pointA, pointB];
 
 		let myPolyline = new Leaflet.polyline(pointList, {
-			color: 'yellow',
+			color: color,
 			weight: 4,
 			opacity: 0.7,
 			smoothFactor: 1
 		});
-		console.log({ myPolyline });
-		console.log(this.map);
 
 		myPolyline.addTo(this.map);
 		this.map.panTo(new Leaflet.LatLng(this.viewLat, this.viewLong));
-	}
+  }
+  
+  goNorth() {
+    this.moveAndDrawLine(0.0025, 0, 'yellow');
+  }
+
+  goWest() {
+    this.moveAndDrawLine(0, -0.0025, 'cyan')
+  }
+
+  goEast() {
+    this.moveAndDrawLine(0, 0.0025, 'orange')
+  }
+
+  goSouth() {
+    this.moveAndDrawLine(-0.0025, 0, 'red');
+  }
 
 	goReturn() {
+    this.moveAndDrawLine.bind(this);
 		this.viewLat = this.lat;
 		this.viewLong = this.long;
 		this.map.flyTo(new Leaflet.LatLng(this.lat, this.long));
-	}
+  }
+  
+  randomCounty() {
+    let countyIndex = this.randomCountyIndex();
+    this.lat = counties[countyIndex].center[0];
+    this.long = counties[countyIndex].center[1];
+    this.goReturn();
+  }
+
 	onMapClick = e => {
 		//const { lat, lng } = e.latlng;
 		//  Leaflet.marker([lat, lng]).addTo(this.map)
@@ -89,48 +113,39 @@ class Livemap extends React.Component {
 			<div ref={this.mapRef} id="mapid" className="map">
 				<div id="wrapper">
 					<div id="northButton">
-						<button id="north" onClick="moveAndDrawLine(0.0025, 0)">
+						<button id="north" onClick={this.goNorth.bind(this)}>
 							North
 						</button>
 					</div>
 					<div id="map-middle">
 						<div id="westButton">
-							<button
-								id="west"
-								onClick="moveAndDrawLine(0, -0.0025)"
-							>
+							<button id="west"	onClick={this.goWest.bind(this)}>
 								West
 							</button>
 						</div>
 						<div id="map">
 							<div id="returnButton">
-								<button id="return" onClick={this.goReturn}>
+								<button id="return" onClick={this.goReturn.bind(this)}>
 									Return
 								</button>
 							</div>
 						</div>
 						<div id="eastButton">
-							<button id="east" onClick={this.moveAndDrawLine}>
+							<button id="east" onClick={this.goEast.bind(this)}>
 								East
 							</button>
 						</div>
 					</div>
-					<div class="row">
-						<div class="balancer" />
+					<div className="row">
+						<div className="balancer" />
 						<div id="southButton">
-							<button
-								id="south"
-								onClick="moveAndDrawLine(-0.0025, 0)"
-							>
+							<button id="south" onClick={this.goSouth.bind(this)}>
 								South
 							</button>
 						</div>
 						<div id="county-image">
-							<button
-								id="countiesButton"
-								onClick="showCounties()"
-							>
-								Show Counties
+							<button id="countiesButton"	onClick={this.randomCounty.bind(this)}>
+								Random County
 							</button>
 						</div>
 					</div>
@@ -141,76 +156,3 @@ class Livemap extends React.Component {
 }
 const rootElement = document.getElementById('root');
 ReactDOM.render(<Livemap />, rootElement);
-
-const counties = [
-	{
-		name: 'Addison County',
-		center: [44.001944, -73.145556],
-		town: 'Middlebury'
-	},
-	{
-		name: 'Bennington County',
-		center: [43.141, -73.081],
-		town: 'Manchester Center'
-	},
-	{
-		name: 'Caledonia County',
-		center: [44.46, -72.1159899],
-		town: 'Danville'
-	},
-	{
-		name: 'Chittenden County',
-		center: [44.501944, -73.093889],
-		town: 'Essex Junction'
-	},
-	{
-		name: 'Essex County',
-		center: [44.73, -71.7801148],
-		town: 'Ferdinand'
-	},
-	{
-		name: 'Franklin County',
-		center: [44.809722, -73.087222],
-		town: 'St. Albans City'
-	},
-	{
-		name: 'Grand Isle County',
-		center: [44.7882463, -73.2909557],
-		town: 'North Hero'
-	},
-	{
-		name: 'Lamoille County',
-		center: [44.599563, -72.6278814],
-		town: 'Hyde Park'
-	},
-	{
-		name: 'Orange County',
-		center: [43.9956247, -72.3912821],
-		town: 'Chelsea'
-	},
-	{
-		name: 'Orleans County',
-		center: [44.83, -72.25],
-		town: 'Irasburg'
-	},
-	{
-		name: 'Rutland County',
-		center: [43.606944, -72.974722],
-		town: 'Rutland'
-	},
-	{
-		name: 'Washington County',
-		center: [44.262222, -72.580833],
-		town: 'Montpelier'
-	},
-	{
-		name: 'Windham County',
-		center: [42.984806, -72.656049],
-		town: 'Newfane'
-	},
-	{
-		name: 'Windsor County',
-		center: [43.484167, -72.385556],
-		town: 'Windsor'
-	}
-];
