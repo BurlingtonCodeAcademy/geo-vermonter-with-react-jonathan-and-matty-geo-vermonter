@@ -63,6 +63,9 @@ class Livemap extends React.Component {
 	}
   updateScore(howMuch) {
      this.score = this.score + howMuch;
+     if (this.score <= 0) {
+       this.score = 0;
+     }
      document.getElementById("score").innerHTML=this.score;
   }
 
@@ -129,6 +132,8 @@ class Livemap extends React.Component {
     this.randomCounty();
     this.goReturn();
     this.toggleHide();
+    this.updateScore(-150);
+    this.updateScore(150);
     this.setState(prevState => ({
       showWarning: false
     }));
@@ -139,6 +144,11 @@ class Livemap extends React.Component {
       this.toggleWinner();
       this.toggleHide();
     }
+  }
+
+  quit() {
+    this.updateScore(-150); 
+    this.toggleHide()
   }
 
   onMapClick = e => {
@@ -200,7 +210,7 @@ class Livemap extends React.Component {
               <WarningBanner warn={this.state.showWarning} />
             </div>
             <div id="giveUp">
-              <button id="quit" className="hidden" onClick={() => this.toggleHide()}>
+              <button id="quit" className="hidden" onClick={() => this.quit()}>
                 I Give Up</button>
             </div>
           </div>
