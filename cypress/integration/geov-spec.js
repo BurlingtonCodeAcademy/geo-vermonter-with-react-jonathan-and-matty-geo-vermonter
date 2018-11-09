@@ -3,10 +3,10 @@ describe('On initial page load', function () {
     cy.visit('http://localhost:3000/');
   });
 
-  ['#map', 'nav',
+  ['#map',
     '#info', '#info #latitude', '#info #longitude',
     '#info #county', '#score',
-    'button#start', 'button#guess', 'button#quit', 'button#quit',
+    'button#start',  'button#quit', 'button#quit',
     'button#north', 'button#south', 'button#east', 'button#west',
     '#score'
   ].forEach((selector) => {

@@ -24,6 +24,13 @@ body {
   border: 0px solid yellow;
 }
 
+.score {
+  position: relative;
+  margin-bottom: 80%;
+  border: 2px solid black;
+  display: block;
+}
+
 #wrapper {
   display: flex;
   flex-direction: column;
@@ -130,3 +137,5 @@ button:disabled, .button:disabled {
 #giveUp {
   align-self: center;
 }
+
+
