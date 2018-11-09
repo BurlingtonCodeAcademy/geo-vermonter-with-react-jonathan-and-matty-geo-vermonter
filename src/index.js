@@ -14,6 +14,7 @@ class Livemap extends React.Component {
     this.long = -72.6;
     this.viewLat = this.lat;
     this.viewLong = this.long;
+    this.showHide = true;
 
   }
   componentDidMount() {
@@ -65,28 +66,12 @@ class Livemap extends React.Component {
     let myPolyline = new Leaflet.polyline(pointList, {
       color: color,
       weight: 4,
-      opacity: 0.7,
+      opacity: 0.6,
       smoothFactor: 1
     });
 
     myPolyline.addTo(this.map);
     this.map.panTo(new Leaflet.LatLng(this.viewLat, this.viewLong));
-  }
-
-  goNorth() {
-    this.moveAndDrawLine(0.0025, 0, 'yellow');
-  }
-
-  goWest() {
-    this.moveAndDrawLine(0, -0.0025, 'cyan')
-  }
-
-  goEast() {
-    this.moveAndDrawLine(0, 0.0025, 'orange')
-  }
-
-  goSouth() {
-    this.moveAndDrawLine(-0.0025, 0, 'red');
   }
 
   goReturn() {
@@ -100,7 +85,25 @@ class Livemap extends React.Component {
     let countyIndex = this.randomCountyIndex();
     this.lat = counties[countyIndex].center[0];
     this.long = counties[countyIndex].center[1];
+  }
+
+  toggleHide() {
+    this.showHide = !this.showHide;
+    document.getElementById('startButton').className = this.showHide ? 'button' : 'hidden';
+    document.getElementById('giveUpButton').className = this.showHide ? 'hidden' : 'button';
+    for (let i = 0; i < 14; i++) {
+      document.getElementById(counties[i].name.split(' ').join('-')).className = this.showHide ? 'hidden' : 'button';
+    }
+  }
+
+  start() {
+    this.randomCounty();
     this.goReturn();
+    this.toggleHide();
+  }
+
+  guess() {
+
   }
 
   onMapClick = e => {
@@ -114,25 +117,25 @@ class Livemap extends React.Component {
         <div ref={this.mapRef} id="mapid" className="map">
           <div id="wrapper">
             <div id="northButton">
-              <button id="north" onClick={this.goNorth.bind(this)}>
+              <button id="north" onClick={() => this.moveAndDrawLine(0.0025, 0, 'yellow')}>
                 North
 						</button>
             </div>
             <div id="map-middle">
               <div id="westButton">
-                <button id="west" onClick={this.goWest.bind(this)}>
+                <button id="west" onClick={() => this.moveAndDrawLine(0, -0.0025, 'cyan')}>
                   West
 							</button>
               </div>
               <div id="map">
                 <div id="returnButton">
-                  <button id="return" onClick={this.goReturn.bind(this)}>
+                  <button id="return" onClick={() => this.goReturn()}>
                     Return
 								</button>
                 </div>
               </div>
               <div id="eastButton">
-                <button id="east" onClick={this.goEast.bind(this)}>
+                <button id="east" onClick={() => this.moveAndDrawLine(0, 0.0025, 'orange')}>
                   East
 							</button>
               </div>
@@ -140,12 +143,12 @@ class Livemap extends React.Component {
             <div className="row">
               <div className="balancer" />
               <div id="southButton">
-                <button id="south" onClick={this.goSouth.bind(this)}>
+                <button id="south" onClick={() => this.moveAndDrawLine(-0.0025, 0, 'red')}>
                   South
 							</button>
               </div>
-              <div id="county-image">
-                <button id="countiesButton" onClick={this.randomCounty.bind(this)}>
+              <div id="startDiv">
+                <button id="startButton" className="button" onClick={() => this.start()}>
                   Start
 							</button>
               </div>
@@ -157,21 +160,26 @@ class Livemap extends React.Component {
             <div className="bold">
               GeoVermonter
           </div>
+          <div id="giveUp">
+          <button id="giveUpButton" className="hidden" onClick={() => this.toggleHide()}>
+            I Give Up</button>
           </div>
-          <button>Addison County</button>
-          <button>Bennington County</button>
-          <button>Caledonia County</button>
-          <button>Chittenden County</button>
-          <button>Essex County</button>
-          <button>Franklin County</button>
-          <button>Grand Isle County</button>
-          <button>Lamoille County</button>
-          <button>Orange County</button>
-          <button>Orleans County</button>
-          <button>Rutland County</button>
-          <button>Washington County</button>
-          <button>Windham County</button>
-          <button>Windsor County</button>
+          </div>
+
+          <button id="Addison-County" className="hidden">Addison County</button>
+          <button id="Bennington-County" className="hidden" onClick="">Bennington County</button>
+          <button id="Caledonia-County" className="hidden" onClick="">Caledonia County</button>
+          <button id="Chittenden-County" className="hidden" onClick="">Chittenden County</button>
+          <button id="Essex-County" className="hidden" onClick="">Essex County</button>
+          <button id="Franklin-County" className="hidden" onClick="">Franklin County</button>
+          <button id="Grand-Isle-County" className="hidden" onClick="">Grand Isle County</button>
+          <button id="Lamoille-County" className="hidden" onClick="">Lamoille County</button>
+          <button id="Orange-County" className="hidden" onClick="">Orange County</button>
+          <button id="Orleans-County" className="hidden" onClick="">Orleans County</button>
+          <button id="Rutland-County" className="hidden" onClick="">Rutland County</button>
+          <button id="Washington-County" className="hidden" onClick="">Washington County</button>
+          <button id="Windham-County" className="hidden" onClick="">Windham County</button>
+          <button id="Windsor-County" className="hidden" onClick="">Windsor County</button>
         </div>
       </div>
     );

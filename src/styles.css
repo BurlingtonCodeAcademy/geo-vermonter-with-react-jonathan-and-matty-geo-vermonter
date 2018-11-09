@@ -15,7 +15,7 @@ body {
   width: 700px;
 }
 
-.row, #map, #high-score, #map-middle, #northButton, #westButton, #eastButton, #southButton, #returnButton, #county-image, .balancer {
+.row, #map, #high-score, #map-middle, #northButton, #westButton, #eastButton, #southButton, #returnButton, #startDiv, .balancer {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -55,7 +55,7 @@ body {
   padding-bottom: 50px;
 }
 
-#county-image {
+#startDiv {
   flex: 1;
   padding-bottom: 50px;
 }
@@ -78,7 +78,11 @@ body {
   height: 450px;
 }
 
-button {
+.hidden { 
+  opacity: 0; 
+}
+
+button, .button {
   background-color: white;
   background-image: linear-gradient(rgb(225, 225, 225), white, rgb(225, 225, 225));
   color: darkgreen;
@@ -88,12 +92,12 @@ button {
   line-height: 20px;
 }
 
-button:hover {
+button:hover, .button:hover {
   opacity: 0.7;
   background-image: none;
 }
 
-button:disabled {
+button:disabled, .button:disabled {
   opacity: 0.4;
 }
 
@@ -106,6 +110,7 @@ button:disabled {
 
 #status {
   display: flex;
+  flex-direction: column;
   flex-grow: 1;
   background-color: white;
   background-image: linear-gradient(rgb(225, 225, 225), white, rgb(225, 225, 225));
@@ -114,9 +119,14 @@ button:disabled {
   border: 1px solid darkgreen;
   border-radius: 3px;
   padding: 5px;
+  justify-content: space-between;
 }
 
 .bold {
   font-weight: bold;
   padding: 2px 2px 9px 0;
+}
+
+#giveUp {
+  align-self: center;
 }
