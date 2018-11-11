@@ -6,7 +6,7 @@ describe('On initial page load', function () {
   ['#map',
     '#info', '#info #latitude', '#info #longitude',
     '#info #county', '#score',
-    'button#start',  'button#quit', 'button#quit',
+    'button#start', 'button#quit', 'button#quit',
     'button#north', 'button#south', 'button#east', 'button#west',
     '#score'
   ].forEach((selector) => {
@@ -30,15 +30,11 @@ describe('the Geovermonter app', () => {
     });
 
     it('the Start button should be disabled', () => {
-      cy.get('button#start').should('be.disabled');
+      cy.get('button#start.hidden');
     });
 
     it('the Quit button should be enabled', () => {
-      cy.get('button#quit').should('be.enabled');
-    });
-
-    it('the Guess button should be enabled', () => {
-      cy.get('button#guess').should('be.enabled');
+      cy.get('button#quit.button').should('be.enabled');
     });
 
     describe('the info fields', () => {
@@ -87,28 +83,36 @@ describe('the Geovermonter app', () => {
     });
   });
 
-  describe('when user clicks "Guess"', () => {
+  describe('when user clicks "Start"', () => {
     beforeEach(() => {
       cy.get('#start').click();
-      cy.get('#guess').click();
 
     });
-    it('asks "What county are we in?" and lists the counties', function () {
-      cy.get('#guess-wrapper').contains('What county are we in?');
-      cy.get('#guesslist').contains('Addison');
+    it('lists the counties', function () {
+      cy.get('button#Addison-County.button').contains('Addison');
     });
-    it('shows a dialog box with "Guess" and "Cancel" buttons', function () {
-      cy.get('button#guessbutton').contains('Guess');
-      cy.get('button#cancelbutton').contains('Cancel');
+
+    describe('the info fields', () => {
+      ['#info #latitude', '#info #longitude',
+        '#info #county'
+      ].forEach((selector) => {
+        it(selector + ' element should contain a question mark', function () {
+          cy.get(selector).then((element) => {
+            assert.equal('?', element.text());
+          });
+        });
+      });
     });
-    describe('when the user selects the correct county and clicks "Guess"', function () {
-      it('fills in the info and informs the user "Correct!"', function () {
+
+    describe('when the user clicks on the correct county', function () {
+      it('fills in the info and informs the user "You won the game!"', function () {
         cy.get('#cheat-sheet').then((guess) => {
           cy.get(`#${guess[0].innerHTML}`).click();
-          cy.get('button#guessbutton').click();
-          cy.get('#winners-circle').contains('Correct')
-        })
-
+          cy.get('#info #latitude').contains(/(42|43|44)/);
+          cy.get('#info #longitude').contains(/(-73|-72|-71)/);
+          cy.get('#info #county').contains(guess[0].innerHTML.split('-')[0]);
+          cy.get('.winning').contains('You won the game!')
+        });
       });
     });
   });

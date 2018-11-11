@@ -5,12 +5,12 @@ import './styles.css';
 import countyBorders from './countyBorders.js';
 import counties from './counties.js';
 
-function WarningBanner(props) {
+function WinningBanner(props) {
   if (!props.warn) {
     return null;
   }
 
-  return <div className="warning">Winner!</div>;
+  return <div className="winning">You won the game!</div>;
 }
 
 class Livemap extends React.Component {
@@ -18,137 +18,169 @@ class Livemap extends React.Component {
     super(props);
     this.mapRef = React.createRef();
     this.map = null;
-    this.lat = 43.7;
+    this.lat = 43.85;
     this.long = -72.6;
     this.viewLat = this.lat;
     this.viewLong = this.long;
+    this.myMarker = null;
     this.myCounty = 'Addison County';
+    this.myTown = 'Middlebury';
     this.showHide = true;
-    this.state = { showWarning: false };
+    this.state = { showWinning: false };
     this.toggleWinner = this.toggleWinner.bind(this);
     this.score = 0;
-	}
-	componentDidMount() {
-		this.map = Leaflet.map(this.mapRef.current, {
-			zoomControl: false
-		}).setView([this.lat, this.long], 16);
-		Leaflet.tileLayer(
-			'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-			{
-				attribution:
-					'&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-				maxZoom: 18,
-				minZoom: 1,
-				center: [this.lat, this.long]
-			}
-		).addTo(this.map);
-		Leaflet.geoJSON(countyBorders, {
-			color: 'rgb(255, 255, 255, 0.5)',
-			fillOpacity: '.175',
-			weight: 2
-		}).addTo(this.map);
-		this.map.doubleClickZoom.disable();
-		this.map.scrollWheelZoom.disable();
-		this.map.boxZoom.disable();
-		this.map.keyboard.disable();
-		this.map.dragging.disable();
-		this.map.touchZoom.disable();
+  }
+  componentDidMount() {
+    this.map = Leaflet.map(this.mapRef.current, {
+      zoomControl: false
+    }).setView([this.lat, this.long], 8);
+    Leaflet.tileLayer(
+      'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution:
+          '&copy; <a href="http://www.esri.com/">Esri</a>, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 18,
+        minZoom: 1,
+        center: [this.lat, this.long]
+      }
+    ).addTo(this.map);
+    Leaflet.geoJSON(countyBorders, {
+      color: 'rgb(255, 255, 255, 0.5)',
+      fillOpacity: '0.175',
+      weight: 2
+    }).addTo(this.map);
+    this.map.doubleClickZoom.disable();
+    this.map.scrollWheelZoom.disable();
+    this.map.boxZoom.disable();
+    this.map.keyboard.disable();
+    this.map.dragging.disable();
+    this.map.touchZoom.disable();
 
-		this.map.on('click', this.onMapClick);
-	}
+    this.map.on('click', this.onMapClick);
+  }
 
-	componentWillUnmount() {
-		this.map.off('click', this.onMapClick);
-		this.map = null;
-	}
+  componentWillUnmount() {
+    this.map.off('click', this.onMapClick);
+    this.map = null;
+  }
   updateScore(howMuch) {
-     this.score = this.score + howMuch;
-     if (this.score <= 0) {
-       this.score = 0;
-     }
-     document.getElementById("score").innerHTML=this.score;
+    this.score = this.score + howMuch;
+    if (this.score <= 0) {
+      this.score = 0;
+    }
+    document.getElementById("score").innerHTML = this.score;
   }
 
   toggleWinner() {
     this.setState(prevState => ({
-      showWarning: !prevState.showWarning
+      showWinning: !prevState.showWinning
     }));
   }
 
-	randomCountyIndex() {
-		let index = Math.floor(Math.random() * counties.length);
-		return index;
-	}
+  randomCountyIndex() {
+    let index = Math.floor(Math.random() * counties.length);
+    return index;
+  }
 
-	moveAndDrawLine(latPlus, longPlus, color) {
-		let pointA = new Leaflet.LatLng(this.viewLat, this.viewLong);
-		this.viewLat = +this.viewLat + latPlus;
-		this.viewLong = +this.viewLong + longPlus;
-		let pointB = new Leaflet.LatLng(this.viewLat, this.viewLong);
-		let pointList = [pointA, pointB];
-      this.updateScore(-1);
+  moveAndDrawLine(latPlus, longPlus, color) {
+    let pointA = new Leaflet.LatLng(this.viewLat, this.viewLong);
+    this.viewLat = +this.viewLat + latPlus;
+    this.viewLong = +this.viewLong + longPlus;
+    let pointB = new Leaflet.LatLng(this.viewLat, this.viewLong);
+    let pointList = [pointA, pointB];
+    this.updateScore(-1);
 
-		let myPolyline = new Leaflet.polyline(pointList, {
-			color: color,
-			weight: 4,
-			opacity: 0.7,
-			smoothFactor: 1
-		});
+    let myPolyline = new Leaflet.polyline(pointList, {
+      color: color,
+      weight: 4,
+      opacity: 0.5,
+      smoothFactor: 1
+    });
 
-		myPolyline.addTo(this.map);
-		this.map.panTo(new Leaflet.LatLng(this.viewLat, this.viewLong));
-	}
+    myPolyline.addTo(this.map);
+    this.map.panTo(new Leaflet.LatLng(this.viewLat, this.viewLong));
+  }
 
-	goReturn() {
-   this.moveAndDrawLine.bind(this);
-   this.viewLat = this.lat;
-   this.viewLong = this.long;
-   this.map.flyTo(new Leaflet.LatLng(this.lat, this.long));
- }
+  goReturn(zoom) {
+    this.viewLat = this.lat;
+    this.viewLong = this.long;
+    this.map.flyTo(new Leaflet.LatLng(this.lat, this.long), zoom);
+  }
 
   randomCounty() {
     let countyIndex = this.randomCountyIndex();
     this.lat = counties[countyIndex].center[0];
     this.long = counties[countyIndex].center[1];
     this.myCounty = counties[countyIndex].name;
-    console.log(this.myCounty);
+    this.myTown = counties[countyIndex].town;
+    document.getElementById('cheat-sheet').innerHTML = this.myCounty.split(' ').join('-');
   }
 
   toggleHide() {
     this.showHide = !this.showHide;
+
     document.getElementById('start').className = this.showHide ? 'button' : 'hidden';
-    document.getElementById('quit').className = this.showHide ? 'hidden' : 'button';
-    document.getElementById('north').className = this.showHide ? 'hidden' : 'button';
-    document.getElementById('west').className = this.showHide ? 'hidden' : 'button';
-    document.getElementById('east').className = this.showHide ? 'hidden' : 'button';
-    document.getElementById('south').className = this.showHide ? 'hidden' : 'button';
-    document.getElementById('return').className = this.showHide ? 'hidden' : 'button';
+    
+    ['quit', 'north', 'west', 'east', 'south', 'return'].forEach((id) => {
+      document.getElementById(id).className = this.showHide ? 'hidden' : 'button';
+    });
+    
     for (let i = 0; i < 14; i++) {
       document.getElementById(counties[i].name.split(' ').join('-')).className = this.showHide ? 'hidden' : 'button';
-    }
+    };
+
   }
 
   start() {
     this.randomCounty();
-    this.goReturn();
+    this.map.setView([this.lat, this.long], 13);
+    this.goReturn(15);
     this.toggleHide();
+    this.hideInfo();
     this.updateScore(-150);
     this.updateScore(150);
     this.setState(prevState => ({
-      showWarning: false
+      showWinning: false
     }));
+    if (this.myMarker) {
+      this.myMarker.remove();
+    }
+  }
+
+  end() {
+    this.map.flyTo([43.85, -72.6], 8);
+    this.myMarker = Leaflet.marker([this.lat, this.long]).addTo(this.map);
+    this.myMarker.bindPopup(`${this.myTown} in ${this.myCounty}`).openPopup();
+    this.toggleHide();
+  }
+
+  hideInfo() {
+    ['latitude', 'longitude', 'county', 'town'].forEach((id) => {
+      document.getElementById(id).innerHTML = '?';
+    });
+  }
+
+  showInfo() {
+    document.getElementById('latitude').innerHTML = (Math.round(this.lat * 100) / 100);
+    document.getElementById('longitude').innerHTML = (Math.round(this.long * 100) / 100);
+    document.getElementById('county').innerHTML = this.myCounty.split(' ')[0];
+    document.getElementById('town').innerHTML = this.myTown;
   }
 
   guess(county) {
     if (county === this.myCounty) {
       this.toggleWinner();
-      this.toggleHide();
+      this.showInfo();
+      this.end();
+    } else {
+      this.updateScore(-10);
     }
   }
 
   quit() {
-    this.updateScore(-150); 
-    this.toggleHide()
+    this.updateScore(-150);
+    this.showInfo();
+    this.end();
   }
 
   onMapClick = e => {
@@ -202,19 +234,29 @@ class Livemap extends React.Component {
         </div>
         <div className="column">
           <div id="status">
-            <div className="bold">
-              GeoVermonter
+            <div className="bold" id="gv-title">
+              GEOVERMONTER
           </div>
-          <div>Score is <span id="score">0</span></div>
+          <div id="info">
+          <div>
+            Latitude: <span id="latitude">?</span>
+            </div>
             <div>
-              <WarningBanner warn={this.state.showWarning} />
+            Longtitude: <span id="longitude">?</span>
             </div>
-            <div id="giveUp">
-              <button id="quit" className="hidden" onClick={() => this.quit()}>
-                I Give Up</button>
+            <div>
+            County: <span id="county">?</span>
+            </div>
+            <div>
+            Town: <span id="town">?</span>
             </div>
           </div>
-
+            <div>Your score is: <span id="score" className="blink-me">0</span>
+            </div>
+            <div>
+              <WinningBanner warn={this.state.showWinning} />
+            </div>
+          </div>
           <button id="Addison-County" className="hidden" onClick={() => this.guess('Addison County')}>Addison County</button>
           <button id="Bennington-County" className="hidden" onClick={() => this.guess('Bennington County')}>Bennington County</button>
           <button id="Caledonia-County" className="hidden" onClick={() => this.guess('Caledonia County')}>Caledonia County</button>
@@ -229,6 +271,8 @@ class Livemap extends React.Component {
           <button id="Washington-County" className="hidden" onClick={() => this.guess('Washington County')}>Washington County</button>
           <button id="Windham-County" className="hidden" onClick={() => this.guess('Windham County')}>Windham County</button>
           <button id="Windsor-County" className="hidden" onClick={() => this.guess('Windsor County')}>Windsor County</button>
+          <button id="quit" className="hidden" onClick={() => this.quit()}>I Give Up</button>
+          <div id="cheat-sheet" className="hidden"></div>
         </div>
       </div>
     );
