@@ -57,12 +57,6 @@ class Livemap extends React.Component {
     this.map.dragging.disable();
     this.map.touchZoom.disable();
 
-    this.map.on('click', this.onMapClick);
-  }
-
-  componentWillUnmount() {
-    this.map.off('click', this.onMapClick);
-    this.map = null;
   }
 
   drawButtons() {
@@ -193,11 +187,6 @@ class Livemap extends React.Component {
     this.showInfo();
     this.end();
   }
-
-  onMapClick = e => {
-    //const { lat, lng } = e.latlng;
-    //  Leaflet.marker([lat, lng]).addTo(this.map)
-  };
 
   render() {
     return (
