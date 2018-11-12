@@ -65,7 +65,7 @@ class Livemap extends React.Component {
     this.map = null;
   }
 
-  buttons() {
+  drawButtons() {
     let array = [];
     for (let county of counties) {
       let idName = county.name.split(' ').join('-');
@@ -268,7 +268,7 @@ class Livemap extends React.Component {
               <WinningBanner warn={this.state.showWinning} />
             </div>
           </div>
-          {this.buttons()}
+          {this.drawButtons()}
           <button id="quit" className="hidden" onClick={() => this.quit()}>I Give Up</button>
           <div id="cheat-sheet" className="hidden"></div>
         </div>
