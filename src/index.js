@@ -28,6 +28,7 @@ class Livemap extends React.Component {
     this.showHide = true;
     this.state = { showWinning: false };
     this.toggleWinner = this.toggleWinner.bind(this);
+    this.guess = this.guess.bind(this);
     this.score = 0;
   }
   componentDidMount() {
@@ -63,6 +64,16 @@ class Livemap extends React.Component {
     this.map.off('click', this.onMapClick);
     this.map = null;
   }
+
+  buttons() {
+    let array = [];
+    for (let county of counties) {
+      let idName = county.name.split(' ').join('-');
+      array.push(<button id={idName} key={idName} className="hidden" onClick={() => this.guess(county.name)}>{county.name}</button>);
+    }
+    return array;
+  }
+
   updateScore(howMuch) {
     this.score = this.score + howMuch;
     if (this.score <= 0) {
@@ -120,11 +131,11 @@ class Livemap extends React.Component {
     this.showHide = !this.showHide;
 
     document.getElementById('start').className = this.showHide ? 'button' : 'hidden';
-    
+
     ['quit', 'north', 'west', 'east', 'south', 'return'].forEach((id) => {
       document.getElementById(id).className = this.showHide ? 'hidden' : 'button';
     });
-    
+
     for (let i = 0; i < 14; i++) {
       document.getElementById(counties[i].name.split(' ').join('-')).className = this.showHide ? 'hidden' : 'button';
     };
@@ -237,40 +248,27 @@ class Livemap extends React.Component {
             <div className="bold" id="gv-title">
               GEOVERMONTER
           </div>
-          <div id="info">
-          <div>
-            Latitude: <span id="latitude">?</span>
+            <div id="info">
+              <div>
+                Latitude: <span id="latitude">?</span>
+              </div>
+              <div>
+                Longtitude: <span id="longitude">?</span>
+              </div>
+              <div>
+                County: <span id="county">?</span>
+              </div>
+              <div>
+                Town: <span id="town">?</span>
+              </div>
             </div>
-            <div>
-            Longtitude: <span id="longitude">?</span>
-            </div>
-            <div>
-            County: <span id="county">?</span>
-            </div>
-            <div>
-            Town: <span id="town">?</span>
-            </div>
-          </div>
             <div>Your score is: <span id="score" className="blink-me">0</span>
             </div>
             <div>
               <WinningBanner warn={this.state.showWinning} />
             </div>
           </div>
-          <button id="Addison-County" className="hidden" onClick={() => this.guess('Addison County')}>Addison County</button>
-          <button id="Bennington-County" className="hidden" onClick={() => this.guess('Bennington County')}>Bennington County</button>
-          <button id="Caledonia-County" className="hidden" onClick={() => this.guess('Caledonia County')}>Caledonia County</button>
-          <button id="Chittenden-County" className="hidden" onClick={() => this.guess('Chittenden County')}>Chittenden County</button>
-          <button id="Essex-County" className="hidden" onClick={() => this.guess('Essex County')}>Essex County</button>
-          <button id="Franklin-County" className="hidden" onClick={() => this.guess('Franklin County')}>Franklin County</button>
-          <button id="Grand-Isle-County" className="hidden" onClick={() => this.guess('Grand Isle County')}>Grand Isle County</button>
-          <button id="Lamoille-County" className="hidden" onClick={() => this.guess('Lamoille County')}>Lamoille County</button>
-          <button id="Orange-County" className="hidden" onClick={() => this.guess('Orange County')}>Orange County</button>
-          <button id="Orleans-County" className="hidden" onClick={() => this.guess('Orleans County')}>Orleans County</button>
-          <button id="Rutland-County" className="hidden" onClick={() => this.guess('Rutland County')}>Rutland County</button>
-          <button id="Washington-County" className="hidden" onClick={() => this.guess('Washington County')}>Washington County</button>
-          <button id="Windham-County" className="hidden" onClick={() => this.guess('Windham County')}>Windham County</button>
-          <button id="Windsor-County" className="hidden" onClick={() => this.guess('Windsor County')}>Windsor County</button>
+          {this.buttons()}
           <button id="quit" className="hidden" onClick={() => this.quit()}>I Give Up</button>
           <div id="cheat-sheet" className="hidden"></div>
         </div>
